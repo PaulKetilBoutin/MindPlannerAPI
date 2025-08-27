@@ -6,5 +6,5 @@ from Models import OpenCyclesModel
 class DailyJournaling(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     comment: str = Field(default=None)
-    journalingDate: datetime = Field(default_factory=datetime.now())
+    journalingDate: str = Field(default_factory=datetime.now().strftime("%c"))
     proudMetter: int = Field(default=None)

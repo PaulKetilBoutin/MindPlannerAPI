@@ -1,6 +1,6 @@
 from fastapi import Depends, FastAPI, HTTPException, Query
 from typing import Annotated
-from Models import DailyJournalingModel, OpenCyclesModel, NextActionsModel
+from Models import DailyJournalingModel, OpenCyclesModel, NextActionsModel, DailyQuestsModel
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 
 sqlite_file_name = "database.db"
@@ -79,5 +79,17 @@ def read_journal(
 def write_journal(DailyJournaling: DailyJournalingModel.DailyJournaling, session: SessionDep) -> DailyJournalingModel.DailyJournaling:
     session.add(DailyJournaling)
     session.commit()
-    session.refresh()
+    session.refresh(DailyJournaling)
     return DailyJournaling
+
+@app.post("/dailyQuest/")
+def write_dailyQuest(DailyQuest: DailyQuestsModel.DailyQuests, session: SessionDep) -> DailyQuestsModel.DailyQuests:
+    session.add(DailyQuest)
+    session.commit()
+    session.refresh(DailyQuest)
+    return DailyQuest
+
+@app.get("/dailyQuests/")
+def read_dailyQuest(session: SessionDep) -> list[DailyQuestsModel.DailyQuests]:
+    quests = session.exec(select(DailyQuestsModel.DailyQuests)).all()
+    return quests
