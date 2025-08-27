@@ -14,7 +14,7 @@ CREATE TABLE NextActions(
     expectedDuration INTEGER NOT NULL
     realDuration INTEGER DEFAULT 0);
 
-CREATE TABLE DayliJournaling(
+CREATE TABLE DailyJournaling(
     dayliJournaling_id INTEGER PRIMARY KEY
     comment TEXT NOT NULL
     journalingDate DATE DEFAULT TODAY

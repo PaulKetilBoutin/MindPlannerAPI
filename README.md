@@ -41,7 +41,7 @@ Ask for a task with a mood level (GET nextActions) with a digit on a scale 1 to 
 Communicate you have done the task (POST taskDone) with a digit on a scale 1 to 10 representing motivation level, 1 being last small precise task
 Add a next action task (POST nextActions) linked to a Open Cycle
 Visualise the advancement of open cycle (GET openCycleGrind)
-Add Open Cycle with at least 1 next Action (POST open Cycle)
+Add Open Cycle with at least 1 next Action (POST openCycle)
 
 
 # Schema DB
