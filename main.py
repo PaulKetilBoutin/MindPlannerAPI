@@ -1,7 +1,8 @@
 from fastapi import Depends, FastAPI, HTTPException, Query
 from typing import Annotated
-from Models import DailyJournalingModel, OpenCyclesModel, NextActionsModel, DailyQuestsModel
+from Models import DailyJournalingModel, OpenCyclesModel, NextActionsModel, DailyQuestsModel, CallFriendModel, ChoresModel
 from sqlmodel import Field, Session, SQLModel, create_engine, select
+from datetime import datetime, timedelta
 
 sqlite_file_name = "database.db"
 sqlite_url = f"sqlite:///{sqlite_file_name}"
@@ -52,12 +53,13 @@ def create_nextAction(NextAction: NextActionsModel.NextActions, session: Session
     return NextAction
 
 @app.get("/nextAction/")
-def read_nextAction(
+async def read_nextAction(
     session: SessionDep,
-    offset: int = 0,
-    limit: Annotated[int, Query(le=100)] = 100,
+    motivation : int = 10,
 ) -> list[NextActionsModel.NextActions]:
-    nextActions = session.exec(select(NextActionsModel.NextActions).offset(offset).limit(limit)).all()
+    print(motivation)
+    nextActions = session.exec(select(NextActionsModel.NextActions).where(NextActionsModel.NextActions.done == False).where(NextActionsModel.NextActions.motivation_mini < motivation)).all()
+    print(nextActions)
     return nextActions
 
 @app.get("/nextAction/{openCyleId}")
@@ -93,3 +95,33 @@ def write_dailyQuest(DailyQuest: DailyQuestsModel.DailyQuests, session: SessionD
 def read_dailyQuest(session: SessionDep) -> list[DailyQuestsModel.DailyQuests]:
     quests = session.exec(select(DailyQuestsModel.DailyQuests)).all()
     return quests
+
+@app.get("/callFriend")
+def read_callFriend(session: SessionDep) -> list[CallFriendModel.CallFriend]:
+    friends = session.exec(select(CallFriendModel.CallFriend)).all()
+    return friends
+
+@app.post("/callFriend")
+def write_callFriend(CallFriend: CallFriendModel.CallFriend, session: SessionDep) -> CallFriendModel.CallFriend:
+    session.add(CallFriend)
+    session.commit()
+    session.refresh(CallFriend)
+    return CallFriend   
+
+@app.get("/allChores/")
+def read_chores(session: SessionDep) -> list[ChoresModel.Chores]:
+    chores = session.exec(select(ChoresModel.Chores)).all()
+    return chores
+
+@app.post("/chores/")
+def write_chores(Chore: ChoresModel.Chores, session: SessionDep) -> ChoresModel.Chores:
+    session.add(Chore)
+    session.commit()
+    session.refresh(Chore)
+    return Chore
+
+@app.get("/todayChores/")
+def get_todaysChores(session: SessionDep) -> list[ChoresModel.Chores]:
+    chores = session.exec(select(ChoresModel.Chores).where(ChoresModel.Chores.lastTime > ChoresModel.Chores.frequency)).all()
+    print(chores)
+    return chores

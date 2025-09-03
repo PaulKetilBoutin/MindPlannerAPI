@@ -5,13 +5,12 @@ from Models import OpenCyclesModel
 
 class NextActions(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    tite: str = Field(index=True)
+    title: str = Field(index=True)
     task: str = Field()
-    motivation_min: int = Field(default=None)
-    endTimeStamp: str = Field(default=None)
-    openCycle_id: int = Field(default=None)
+    motivation_mini: int = Field(default=None)
+    endTimeStamp: str | None = Field(default=None)
+    openCycle_id: int | None = Field(default=None)
     done: bool = Field(default=False)
-    link: str | None = Field(default=None)
     timeSensitive: str | None = Field(default=None)
     expected_duration: int = Field(default=None)
     real_duration: int = Field(default=0)
