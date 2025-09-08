@@ -1,4 +1,4 @@
-from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi import Depends, FastAPI, HTTPException, Query, Response, status
 from fastapi.responses import UJSONResponse, RedirectResponse
 from typing import Annotated
 from Models import DailyJournalingModel, OpenCyclesModel, NextActionsModel, DailyQuestsModel, CallFriendModel, ChoresModel, WishesCyclesModel, ClosedCyclesModel
@@ -41,22 +41,22 @@ def create_openCycle(WishesCycles: WishesCyclesModel.WishesCycles, session: Sess
 
 
 @app.post("/openCycle/")
-def create_openCycle(OpenCycles: OpenCyclesModel.OpenCycles, session: SessionDep) -> OpenCyclesModel.OpenCycles:
+def create_openCycle(OpenCycles: OpenCyclesModel.OpenCycles, session: SessionDep, response: Response) -> OpenCyclesModel.OpenCycles:
     check = select(func.count(OpenCyclesModel.OpenCycles.id))
     if session.scalar(check) < 10:
         session.add(OpenCycles)
         session.commit()
         session.refresh(OpenCycles)
         return OpenCycles
-    return UJSONResponse([{"content": "Too many open Cycles, max 10", "status_code": 442}])
+    response.status_code = status.HTTP_406_NOT_ACCEPTABLE
+    response.content = "Too many openCycle try adding to WishesList"
+    return response
 
 @app.get("/openCycle/")
 def read_openCycles(
-    session: SessionDep,
-    offset: int = 0,
-    limit: Annotated[int, Query(le=100)] = 100,
+    session: SessionDep
 ) -> list[OpenCyclesModel.OpenCycles]:
-    openCycles = session.exec(select(OpenCyclesModel.OpenCycles).offset(offset).limit(limit)).all()
+    openCycles = session.exec(select(OpenCyclesModel.OpenCycles)).all()
     return openCycles
 
 @app.post("/nextAction/")
