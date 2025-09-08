@@ -1,7 +1,8 @@
 from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi.responses import UJSONResponse, RedirectResponse
 from typing import Annotated
-from Models import DailyJournalingModel, OpenCyclesModel, NextActionsModel, DailyQuestsModel, CallFriendModel, ChoresModel
-from sqlmodel import Field, Session, SQLModel, create_engine, select
+from Models import DailyJournalingModel, OpenCyclesModel, NextActionsModel, DailyQuestsModel, CallFriendModel, ChoresModel, WishesCyclesModel, ClosedCyclesModel
+from sqlmodel import Field, Session, SQLModel, create_engine, select, func
 from datetime import datetime, timedelta
 
 sqlite_file_name = "database.db"
@@ -20,6 +21,7 @@ def get_session():
 SessionDep = Annotated[Session, Depends(get_session)]
 
 app = FastAPI()
+CONST_URL = "http://127.0.0.1:8000"
 
 @app.on_event("startup")
 def on_startup():
@@ -29,12 +31,24 @@ def on_startup():
 async def root():
     return {"message": "Hello World"}
 
+
+@app.post("/wishesCycles/")
+def create_openCycle(WishesCycles: WishesCyclesModel.WishesCycles, session: SessionDep) -> WishesCyclesModel.WishesCycles:
+    session.add(WishesCycles)
+    session.commit()
+    session.refresh(WishesCycles)
+    return WishesCycles
+
+
 @app.post("/openCycle/")
 def create_openCycle(OpenCycles: OpenCyclesModel.OpenCycles, session: SessionDep) -> OpenCyclesModel.OpenCycles:
-    session.add(OpenCycles)
-    session.commit()
-    session.refresh(OpenCycles)
-    return OpenCycles
+    check = select(func.count(OpenCyclesModel.OpenCycles.id))
+    if session.scalar(check) < 10:
+        session.add(OpenCycles)
+        session.commit()
+        session.refresh(OpenCycles)
+        return OpenCycles
+    return UJSONResponse([{"content": "Too many open Cycles, max 10", "status_code": 442}])
 
 @app.get("/openCycle/")
 def read_openCycles(
